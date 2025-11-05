@@ -11,6 +11,7 @@ import occasionRoutes from "./routes/occasionRoutes .js"
 import partnerRoutes from "./routes/partnerRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import stylerRoutes from "./routes/stylerRoutes.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
@@ -29,5 +30,6 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/clothes", clothesRoutes);
 app.use("/api/styler", stylerRoutes);
 app.use("/api/occasion", occasionRoutes);
+app.use(errorHandler);
 
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
