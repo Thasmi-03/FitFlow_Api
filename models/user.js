@@ -1,26 +1,27 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-const UserSchema = new Schema({
-  email: { 
-    type: String, 
-    required: true, 
-    unique: true, 
-    lowercase: true, 
-    trim: true 
+const UserSchema = new Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    role: {
+      type: String,
+      enum: ["user", "stylist", "admin", "partner"],
+      default: "user",
+    },
   },
-  password: { 
-    type: String, 
-    required: true 
-  },
-  role: { 
-    type: String, 
-    enum: ["user", "stylist", "admin", "partner"], 
-    default: "user" 
-  }
-}, { 
-  timestamps: true 
-});
+  { timestamps: true }
+);
 
 UserSchema.virtual("id").get(function () {
   return this._id.toHexString();

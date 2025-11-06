@@ -2,10 +2,11 @@ import "../models/user.js";
 import { Occasion } from "../models/occasion.js";
 import mongoose from "mongoose";
 
+
 export const getAllOccasions = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
     const skip = (page - 1) * limit;
 
     const filter = {};
@@ -33,16 +34,22 @@ export const getAllOccasions = async (req, res) => {
   }
 };
 
+
+// Get a single occasion by ID
 export const getOccasionById = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Invalid ID format" });
+    }
 
-    const occasion = await Occasion.findById(req.params.id)
+    const occasion = await Occasion.findById(id)
       .populate("userId")
       .populate("clothesList");
 
-    if (!occasion) return res.status(404).json({ error: "Occasion not found" });
+    if (!occasion) {
+      return res.status(404).json({ error: "Occasion not found" });
+    }
 
     res.status(200).json(occasion);
   } catch (error) {
@@ -50,29 +57,40 @@ export const getOccasionById = async (req, res) => {
   }
 };
 
+// Create a new occasion
 export const createOccasion = async (req, res) => {
   try {
     const newOccasion = new Occasion(req.body);
     const saved = await newOccasion.save();
-    const populated = await saved.populate("userId").populate("clothesList");
 
-    res.status(201).json({ message: "Occasion created", occasion: populated });
+    // Correct populate for documents
+    await saved.populate(["userId", "clothesList"]);
+
+    res.status(201).json({ message: "Occasion created", occasion: saved });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+// Update an existing occasion
 export const updateOccasion = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Invalid ID format" });
+    }
 
-    const updated = await Occasion.findByIdAndUpdate(req.params.id, req.body, {
+    const updated = await Occasion.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,
-    }).populate("userId").populate("clothesList");
+    });
 
-    if (!updated) return res.status(404).json({ error: "Occasion not found" });
+    if (!updated) {
+      return res.status(404).json({ error: "Occasion not found" });
+    }
+
+    // Populate after update
+    await updated.populate(["userId", "clothesList"]);
 
     res.status(200).json({ message: "Occasion updated", occasion: updated });
   } catch (error) {
@@ -80,14 +98,19 @@ export const updateOccasion = async (req, res) => {
   }
 };
 
+// Delete an occasion
 export const deleteOccasion = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Invalid ID format" });
+    }
 
-    const deleted = await Occasion.findByIdAndDelete(req.params.id);
+    const deleted = await Occasion.findByIdAndDelete(id);
 
-    if (!deleted) return res.status(404).json({ error: "Occasion not found" });
+    if (!deleted) {
+      return res.status(404).json({ error: "Occasion not found" });
+    }
 
     res.status(200).json({ message: "Occasion deleted", occasion: deleted });
   } catch (error) {
