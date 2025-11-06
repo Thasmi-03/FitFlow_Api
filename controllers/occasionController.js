@@ -1,16 +1,15 @@
 import "../models/user.js";
 import { Occasion } from "../models/occasion.js";
+import mongoose from "mongoose";
 
 export const getAllOccasions = async (req, res) => {
   try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const requestedLimit = parseInt(req.query.limit, 10) || 10;
-    const MAX_LIMIT = 50;
-    const limit = Math.min(requestedLimit, MAX_LIMIT);
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
     const skip = (page - 1) * limit;
 
     const filter = {};
-    if (req.query.user) filter.user = req.query.user;
+    if (req.query.user) filter.userId = req.query.user;
     if (req.query.type) filter.type = req.query.type;
 
     const total = await Occasion.countDocuments(filter);
@@ -19,7 +18,7 @@ export const getAllOccasions = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .sort({ date: -1 })
-      .populate("user")
+      .populate("userId")
       .populate("clothesList");
 
     res.status(200).json({
@@ -36,8 +35,11 @@ export const getAllOccasions = async (req, res) => {
 
 export const getOccasionById = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+      return res.status(400).json({ error: "Invalid ID format" });
+
     const occasion = await Occasion.findById(req.params.id)
-      .populate("user")
+      .populate("userId")
       .populate("clothesList");
 
     if (!occasion) return res.status(404).json({ error: "Occasion not found" });
@@ -52,10 +54,7 @@ export const createOccasion = async (req, res) => {
   try {
     const newOccasion = new Occasion(req.body);
     const saved = await newOccasion.save();
-    const populated = await saved
-      .populate("user")
-      .populate("clothesList")
-      .execPopulate?.() || saved;
+    const populated = await saved.populate("userId").populate("clothesList");
 
     res.status(201).json({ message: "Occasion created", occasion: populated });
   } catch (error) {
@@ -65,12 +64,13 @@ export const createOccasion = async (req, res) => {
 
 export const updateOccasion = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+      return res.status(400).json({ error: "Invalid ID format" });
+
     const updated = await Occasion.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
-    })
-      .populate("user")
-      .populate("clothesList");
+    }).populate("userId").populate("clothesList");
 
     if (!updated) return res.status(404).json({ error: "Occasion not found" });
 
@@ -82,6 +82,9 @@ export const updateOccasion = async (req, res) => {
 
 export const deleteOccasion = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+      return res.status(400).json({ error: "Invalid ID format" });
+
     const deleted = await Occasion.findByIdAndDelete(req.params.id);
 
     if (!deleted) return res.status(404).json({ error: "Occasion not found" });
