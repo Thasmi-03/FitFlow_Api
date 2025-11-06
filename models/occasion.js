@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 const OccasionSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-  title: { type: String, required: true, trim: true }, // e.g., "Wedding", "Birthday Party"
+  title: { type: String, required: true, trim: true },
   type: { 
     type: String, 
     enum: ["wedding", "party", "meeting", "casual", "formal", "festival", "other"], 
@@ -19,8 +19,7 @@ const OccasionSchema = new Schema({
   date: { type: Date, required: true },
   startTime: { type: String },
   endTime: { type: String },
-  dressCode: { type: String, trim: true }, // e.g., "formal", "semi-formal", "traditional"
-  suggestedOutfits: [{ type: Schema.Types.ObjectId, ref: "Outfit" }],
+  dressCode: { type: String, trim: true },
   clothesList: [{ type: Schema.Types.ObjectId, ref: "Clothes" }],
   notes: { type: String, trim: true },
   createdAt: { type: Date, default: Date.now }

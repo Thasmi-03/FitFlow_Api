@@ -13,8 +13,6 @@ const WeatherSchema = new Schema({
   expiresAt: { type: Date }
 });
 
-// Auto-expire after `expiresAt`
 WeatherSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-// Named export
 export const WeatherCache = mongoose.model("WeatherCache", WeatherSchema);

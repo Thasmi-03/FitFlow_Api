@@ -1,17 +1,17 @@
 import express from "express";
 import {
-  createPartner,
   getAllPartners,
   getPartnerById,
+  createPartner,
   updatePartner,
   deletePartner
 } from "../controllers/partnerController.js";
 
 const router = express.Router();
 
-router.post("/", createPartner);
 router.get("/", getAllPartners);
 router.get("/:id", getPartnerById);
+router.post("/", createPartner);
 router.put("/:id", updatePartner);
 router.delete("/:id", deletePartner);
 
