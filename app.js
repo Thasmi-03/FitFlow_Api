@@ -5,7 +5,6 @@ import "./models/index.js";
 import express from "express";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
-import weatherRoutes from "./routes/weatherRoutes.js";
 import clothesRoutes from "./routes/clothesRoutes.js";
 import occasionRoutes from "./routes/occasionRoutes .js"
 import partnerRoutes from "./routes/partnerRoutes.js";
@@ -24,7 +23,6 @@ connectDB();
 app.get("/", (req, res) => res.send("API running"));
 
 app.use("/api/users", userRoutes);
-app.use("/api/weather", weatherRoutes);
 app.use("/api/partner", partnerRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/clothes", clothesRoutes);
