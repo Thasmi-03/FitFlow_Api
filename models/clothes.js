@@ -6,7 +6,6 @@ const ClothesSchema = new Schema({
   images: [{ type: String, required: true }],
   itemName: { type: String, trim: true },
   category: { type: String, required: true, enum: ["top", "bottom", "dress", "outerwear", "shoes", "accessory", "other"] },
-  subCategory: { type: String },
   brand: { type: String },
   color: [{ type: String }],
   material: { type: String },
@@ -15,7 +14,6 @@ const ClothesSchema = new Schema({
   occasionTags: [{ type: String }],
   purchasedAt: { type: Date },
   usageCount: { type: Number, default: 0 },
-  lastWornAt: { type: Date },
   wearable: { type: Boolean, default: true },
   isArchived: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }

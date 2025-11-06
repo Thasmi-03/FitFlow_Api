@@ -2,21 +2,16 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const StylerSchema = new Schema({
-  userRef: { type: Schema.Types.ObjectId, ref: "User" },
-  name: { type: String, trim: true },
-  bio: { type: String },
-  portfolioImages: [{ type: String }],
-  ratingAvg: { type: Number, min: 0, max: 5, default: 0 },
-  presets: [{
-    title: { type: String },
-    clothesRefs: [{ type: Schema.Types.ObjectId, ref: "Clothes" }],
-    description: { type: String },
-    suitableFor: [{ type: String }],
-    createdAt: { type: Date, default: Date.now }
-  }],
-  createdAt: { type: Date, default: Date.now }
+  userId: { type: Schema.Types.ObjectId, ref: "User", required: true }, // Link to User
+  name: { type: String, required: true, trim: true },                     // Styler's name
+  bio: { type: String },                                                   // Short bio
+  gender: { type: String, enum: ["male", "female", "other"], default: "other" }, // Gender
+  age: { type: Number },                                                   // Age
+  country: { type: String },                                               // Country
+  skinTone: { type: String },                                              // Skin tone
+  mood: { type: String },                                                  // Mood/style preference
+  ratingAvg: { type: Number, min: 0, max: 5, default: 0 },                // Average rating
+  createdAt: { type: Date, default: Date.now }                             // Creation date
 });
-
-StylerSchema.index({ userRef: 1 });
 
 export const Styler = mongoose.model("Styler", StylerSchema);
