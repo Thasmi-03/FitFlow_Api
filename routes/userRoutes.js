@@ -6,8 +6,14 @@ import {
   updateUser,
   deleteUser
 } from "../controllers/userController.js";
+import { authenticate } from "../middleware/auth.js";
+import { requireAdmin } from "../middleware/admin.js";
 
 const router = express.Router();
+
+// All user routes require authentication and admin permission
+router.use(authenticate);
+router.use(requireAdmin);
 
 router.post("/", createUser);
 router.get("/", getAllUsers);

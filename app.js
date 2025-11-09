@@ -4,6 +4,7 @@ dotenv.config();
 import "./models/index.js";
 import express from "express";
 import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import clothesRoutes from "./routes/clothesRoutes.js";
 import occasionRoutes from "./routes/occasionRoutes .js"
@@ -18,10 +19,22 @@ const PORT = Number(process.env.PORT) || 5000;
 app.use(express.json());
 app.use(cors());
 
-connectDB();
+connectDB().then(async () => {
+  // Drop old accountId index if it exists (from previous schema)
+  try {
+    const { dropAccountIdIndex } = await import("./models/user.js");
+    await dropAccountIdIndex();
+  } catch (error) {
+    console.error("Error cleaning up old index:", error.message);
+  }
+});
 
 app.get("/", (req, res) => res.send("API running"));
 
+// Authentication routes (public)
+app.use("/api/auth", authRoutes);
+
+// Protected routes
 app.use("/api/users", userRoutes);
 app.use("/api/partner", partnerRoutes);
 app.use("/api/payment", paymentRoutes);

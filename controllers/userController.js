@@ -14,6 +14,7 @@ export const getAllUsers = async (req, res) => {
     const total = await User.countDocuments(filter);
 
     const users = await User.find(filter)
+      .select("-password")
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -36,7 +37,7 @@ export const getUserById = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
       return res.status(400).json({ error: "Invalid ID format" });
 
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).select("-password");
 
     if (!user) return res.status(404).json({ error: "User not found" });
 
@@ -51,7 +52,9 @@ export const createUser = async (req, res) => {
   try {
     const newUser = new User(req.body);
     const savedUser = await newUser.save();
-    res.status(201).json({ message: "User created", user: savedUser });
+    const userResponse = savedUser.toJSON();
+    delete userResponse.password;
+    res.status(201).json({ message: "User created", user: userResponse });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -66,7 +69,7 @@ export const updateUser = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
-    });
+    }).select("-password");
 
     if (!updatedUser) return res.status(404).json({ error: "User not found" });
 
@@ -82,7 +85,7 @@ export const deleteUser = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
       return res.status(400).json({ error: "Invalid ID format" });
 
-    const deletedUser = await User.findByIdAndDelete(req.params.id);
+    const deletedUser = await User.findByIdAndDelete(req.params.id).select("-password");
 
     if (!deletedUser) return res.status(404).json({ error: "User not found" });
 
