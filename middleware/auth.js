@@ -24,6 +24,14 @@ export const authenticate = async (req, res, next) => {
       return res.status(401).json({ error: "No token provided" });
     }
 
+    // Check blacklist (logout invalidates tokens immediately)
+    try {
+      const { isTokenBlacklisted } = await import("../utils/tokenBlacklist.js");
+      if (isTokenBlacklisted(token)) {
+        return res.status(401).json({ error: "Token has been revoked" });
+      }
+    } catch (_) {}
+
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key");
 
@@ -54,4 +62,7 @@ export const authenticate = async (req, res, next) => {
     return res.status(500).json({ error: "Authentication failed" });
   }
 };
+
+// Alias for clarity in routes
+export const verifyToken = authenticate;
 

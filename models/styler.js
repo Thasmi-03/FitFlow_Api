@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const StylerSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: "User", required: true }, 
   name: { type: String, required: true, trim: true },                     
   bio: { type: String },                                                   
   gender: { type: String, enum: ["male", "female", "other"], default: "other" }, 

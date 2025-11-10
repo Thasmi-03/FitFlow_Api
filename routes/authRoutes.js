@@ -1,10 +1,6 @@
 import express from "express";
-import {
-  register,
-  login,
-  getProfile,
-} from "../controllers/authController.js";
-import { authenticate } from "../middleware/auth.js";
+import { register, login, getProfile, logout } from "../controllers/authController.js";
+import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -13,7 +9,8 @@ router.post("/register", register);
 router.post("/login", login);
 
 // Protected routes - require authentication
-router.get("/profile", authenticate, getProfile);
+router.get("/profile", verifyToken, getProfile);
+router.post("/logout", verifyToken, logout);
 
 export default router;
 

@@ -96,7 +96,7 @@ export const register = async (req, res) => {
         message,
         token,
         user: userResponse,
-      });
+      }); 
     }
 
     // For users that need approval (partners and subsequent admins)
@@ -124,8 +124,8 @@ export const login = async (req, res) => {
       });
     }
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Find user by email (case-insensitive search)
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
@@ -156,6 +156,7 @@ export const login = async (req, res) => {
       user: userResponse,
     });
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -241,6 +242,25 @@ export const getProfile = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+// Logout: blacklist current token so it cannot be used again
+export const logout = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(400).json({ error: "No authorization token provided" });
+    const token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+    if (!token) return res.status(400).json({ error: "No token provided" });
+
+    // Decode without verifying to read exp (signature isn't needed here)
+    const decoded = jwt.decode(token);
+    const exp = decoded && decoded.exp ? decoded.exp : undefined;
+    const { blacklistToken } = await import("../utils/tokenBlacklist.js");
+    blacklistToken(token, exp);
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 };
 

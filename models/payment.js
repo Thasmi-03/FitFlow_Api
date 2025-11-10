@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const PaymentSchema = new Schema({
-   userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
   amount: { type: Number, required: true },
   currency: { type: String, default: "USD" },
   method: { type: String, enum: ["card", "paypal", "stripe", "bank_transfer", "inapp"], default: "card" },

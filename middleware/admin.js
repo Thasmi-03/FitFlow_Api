@@ -57,7 +57,7 @@ export const requirePartner = (req, res, next) => {
 /**
  * Middleware to check if user has any of the specified roles
  * Must be used after authenticate middleware
- * @param {string[]} allowedRoles - Array of allowed roles
+ * @param {string[]|string} allowedRoles - Array of allowed roles or a single role
  */
 export const requireRole = (allowedRoles) => {
   return (req, res, next) => {
@@ -65,13 +65,17 @@ export const requireRole = (allowedRoles) => {
       return res.status(401).json({ error: "Authentication required" });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+    if (!roles.includes(req.user.role)) {
       return res.status(403).json({ 
-        error: `Access denied. Required role: ${allowedRoles.join(" or ")}` 
+        error: `Access denied. Required role: ${roles.join(" or ")}` 
       });
     }
 
     next();
   };
 };
+
+// Alias names to match spec
+export const verifyRole = requireRole;
 

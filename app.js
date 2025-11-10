@@ -33,7 +33,7 @@ connectDB().then(async () => {
 app.get("/", (req, res) => res.send("API running"));
 
 // Authentication routes (public)
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes); 
 
 // Admin routes (require admin authentication)
 app.use("/api/admin", adminRoutes);
