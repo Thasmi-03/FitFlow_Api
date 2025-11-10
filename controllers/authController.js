@@ -14,7 +14,10 @@ const generateToken = (userId) => {
 
 /**
  * Register a new user
- * User must be approved by admin before they can log in
+ * - Stylers: Auto-approved and receive token immediately
+ * - First Admin: Auto-approved and receive token immediately (if no approved admins exist)
+ * - Partners: Require admin approval before they can log in
+ * - Subsequent Admins: Require approval from existing admin
  */
 export const register = async (req, res) => {
   try {
@@ -40,12 +43,39 @@ export const register = async (req, res) => {
       return res.status(400).json({ error: "User with this email already exists" });
     }
 
-    // Create new user (isApproved defaults to false)
+    // Determine approval status based on role
+    let isApproved = false;
+    let shouldReturnToken = false;
+    
+    if (role === "styler") {
+      // Stylers are auto-approved - no admin approval needed
+      isApproved = true;
+      shouldReturnToken = true;
+    } else if (role === "admin") {
+      // Check if this is the first admin (no approved admins exist)
+      const approvedAdmins = await User.countDocuments({ 
+        role: "admin", 
+        isApproved: true 
+      });
+      
+      if (approvedAdmins === 0) {
+        // This is the first admin - auto-approve
+        isApproved = true;
+        shouldReturnToken = true;
+      }
+      // Subsequent admins need approval
+    } else if (role === "partner") {
+      // Partners need admin approval
+      isApproved = false;
+      shouldReturnToken = false;
+    }
+
+    // Create new user
     const newUser = new User({
       email,
       password,
       role,
-      isApproved: false, // Must be approved by admin
+      isApproved,
     });
 
     const savedUser = await newUser.save();
@@ -54,6 +84,22 @@ export const register = async (req, res) => {
     const userResponse = savedUser.toJSON();
     delete userResponse.password;
 
+    // If user is auto-approved, return token immediately
+    if (shouldReturnToken) {
+      const token = generateToken(savedUser._id);
+      
+      const message = role === "styler" 
+        ? "Styler registered successfully. You can now log in."
+        : "Admin registered and approved successfully. You can now log in.";
+      
+      return res.status(201).json({
+        message,
+        token,
+        user: userResponse,
+      });
+    }
+
+    // For users that need approval (partners and subsequent admins)
     res.status(201).json({
       message: "User registered successfully. Waiting for admin approval.",
       user: userResponse,
@@ -117,6 +163,7 @@ export const login = async (req, res) => {
 /**
  * Approve a user (Admin only)
  * This endpoint should be protected with admin middleware
+ * Only partners and admins can be approved (stylers are auto-approved)
  */
 export const approveUser = async (req, res) => {
   try {
@@ -129,6 +176,13 @@ export const approveUser = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
+    }
+
+    // Stylers don't need approval - they are auto-approved on registration
+    if (user.role === "styler") {
+      return res.status(400).json({ 
+        error: "Stylers are automatically approved and don't require manual approval." 
+      });
     }
 
     if (user.isApproved) {
@@ -152,11 +206,15 @@ export const approveUser = async (req, res) => {
 
 /**
  * Get pending users (Admin only)
- * Returns list of users waiting for approval
+ * Returns list of users waiting for approval (partners and admins only, not stylers)
  */
 export const getPendingUsers = async (req, res) => {
   try {
-    const pendingUsers = await User.find({ isApproved: false })
+    // Only get partners and admins that are pending approval (stylers are auto-approved)
+    const pendingUsers = await User.find({ 
+      isApproved: false,
+      role: { $in: ["partner", "admin"] }
+    })
       .select("-password")
       .sort({ createdAt: -1 });
 

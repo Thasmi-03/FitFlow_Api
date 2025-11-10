@@ -5,6 +5,7 @@ import "./models/index.js";
 import express from "express";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import clothesRoutes from "./routes/clothesRoutes.js";
 import occasionRoutes from "./routes/occasionRoutes .js"
@@ -33,6 +34,9 @@ app.get("/", (req, res) => res.send("API running"));
 
 // Authentication routes (public)
 app.use("/api/auth", authRoutes);
+
+// Admin routes (require admin authentication)
+app.use("/api/admin", adminRoutes);
 
 // Protected routes
 app.use("/api/users", userRoutes);
