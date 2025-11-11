@@ -10,5 +10,4 @@ const PartnerSchema = new Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-export const Partner = mongoose.model("Partner", PartnerSchema);
-export default Partner
+export default mongoose.model("Partner", PartnerSchema);

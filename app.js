@@ -4,14 +4,18 @@ dotenv.config();
 import "./models/index.js";
 import express from "express";
 import connectDB from "./config/db.js";
+
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import clothesRoutes from "./routes/clothesRoutes.js";
-import occasionRoutes from "./routes/occasionRoutes .js"
+import clothRoutes from "./routes/clothRoutes.js";
+import occasionRoutes from "./routes/occasionRoutes.js";
 import partnerRoutes from "./routes/partnerRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import stylerRoutes from "./routes/stylerRoutes.js";
+import partnersPublicRoutes from "./routes/partnersPublicRoutes.js";
+
 import errorHandler from "./middleware/errorHandler.js";
 
 const app = express();
@@ -21,7 +25,6 @@ app.use(express.json());
 app.use(cors());
 
 connectDB().then(async () => {
-  // Drop old accountId index if it exists (from previous schema)
   try {
     const { dropAccountIdIndex } = await import("./models/user.js");
     await dropAccountIdIndex();
@@ -32,19 +35,25 @@ connectDB().then(async () => {
 
 app.get("/", (req, res) => res.send("API running"));
 
-// Authentication routes (public)
-app.use("/api/auth", authRoutes); 
+// Public/auth routes
+app.use("/api/auth", authRoutes);
+app.use("/api/partners", partnersPublicRoutes);
 
-// Admin routes (require admin authentication)
+// Admin & general protected routes
 app.use("/api/admin", adminRoutes);
-
-// Protected routes
 app.use("/api/users", userRoutes);
 app.use("/api/partner", partnerRoutes);
 app.use("/api/payment", paymentRoutes);
-app.use("/api/clothes", clothesRoutes);
+
+// Correct route wiring: clothes vs cloth vs styler
+app.use("/api/clothes", clothesRoutes);  // collection of clothes endpoints
+app.use("/api/cloth", clothRoutes);      // single-cloth or partner-managed cloth endpoints (if you meant that)
 app.use("/api/styler", stylerRoutes);
+
 app.use("/api/occasion", occasionRoutes);
+
 app.use(errorHandler);
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`Server running on http://localhost:${PORT}`)
+);
