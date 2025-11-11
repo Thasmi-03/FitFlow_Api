@@ -1,6 +1,6 @@
 # Beginner's Guide to Authentication System
 
-## 📚 Table of Contents
+##  Table of Contents
 1. [Understanding the Schema](#understanding-the-schema)
 2. [The `isApproved` Field Explained](#the-isapproved-field-explained)
 3. [Sample Data Examples](#sample-data-examples)
@@ -52,10 +52,10 @@ isApproved: {
 
 | Role | Auto-Approved? | Explanation |
 |------|----------------|-------------|
-| **Styler** | ✅ Yes | Stylers are automatically approved when they register |
-| **First Admin** | ✅ Yes | The very first admin is auto-approved |
-| **Partner** | ❌ No | Partners must wait for admin approval |
-| **Subsequent Admins** | ❌ No | Additional admins need approval from existing admin |
+| **Styler** | Yes | Stylers are automatically approved when they register |
+| **First Admin** |  Yes | The very first admin is auto-approved |
+| **Partner** |  No | Partners must wait for admin approval |
+| **Subsequent Admins** |  No | Additional admins need approval from existing admin |
 
 ---
 
@@ -69,7 +69,7 @@ isApproved: {
   "email": "john.styler@example.com",
   "password": "$2a$10$hashedpassword123...",  // Automatically hashed
   "role": "styler",
-  "isApproved": true,  // ✅ Auto-approved
+  "isApproved": true,  //  Auto-approved
   "createdAt": "2024-01-15T10:30:00.000Z",
   "updatedAt": "2024-01-15T10:30:00.000Z"
 }
@@ -89,7 +89,7 @@ isApproved: {
   "email": "partner@example.com",
   "password": "$2a$10$hashedpassword456...",
   "role": "partner",
-  "isApproved": false,  // ❌ Waiting for approval
+  "isApproved": false,  //  Waiting for approval
   "createdAt": "2024-01-15T11:00:00.000Z",
   "updatedAt": "2024-01-15T11:00:00.000Z"
 }
@@ -110,7 +110,7 @@ isApproved: {
   "email": "admin@example.com",
   "password": "$2a$10$hashedpassword789...",
   "role": "admin",
-  "isApproved": true,  // ✅ First admin is auto-approved
+  "isApproved": true,  //  First admin is auto-approved
   "createdAt": "2024-01-15T09:00:00.000Z",
   "updatedAt": "2024-01-15T09:00:00.000Z"
 }
@@ -124,7 +124,7 @@ isApproved: {
   "email": "admin2@example.com",
   "password": "$2a$10$hashedpasswordabc...",
   "role": "admin",
-  "isApproved": false,  // ❌ Needs approval from first admin
+  "isApproved": false,  //  Needs approval from first admin
   "createdAt": "2024-01-15T12:00:00.000Z",
   "updatedAt": "2024-01-15T12:00:00.000Z"
 }
