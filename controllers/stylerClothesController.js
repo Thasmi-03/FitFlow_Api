@@ -1,58 +1,132 @@
-import { Clothes } from "../models/clothes.js";
+import { PartnerCloth } from "../models/partnerClothes.js";
+import mongoose from "mongoose";
 
-// Get all clothes
-export const getAllClothes = async (req, res) => {
+// Helper to check ObjectId
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// -----------------------------
+// Public: get all public styler clothes
+export const getPublicStylerClothes = async (req, res) => {
   try {
-    const clothes = await Clothes.find();
+    const clothes = await Cloth.find({ ownerType: "styler", visibility: "public" }).sort({ createdAt: -1 });
     res.status(200).json(clothes);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch public styler clothes", error: err.message });
   }
 };
 
-// Get clothes by ID
-export const getClothesById = async (req, res) => {
+// -----------------------------
+// Styler: get logged-in styler's clothes
+export const getMyStylerClothes = async (req, res) => {
   try {
-    const clothes = await Clothes.findById(req.params.id);
-    if (!clothes) return res.status(404).json({ error: "Clothes not found" });
+    const userId = req.user?._id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const clothes = await PartnerCloth.find({ ownerType: "styler", ownerId: userId }).sort({ createdAt: -1 });
     res.status(200).json(clothes);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch your clothes", error: err.message });
   }
 };
 
-// Create clothes
-export const createClothes = async (req, res) => {
+// -----------------------------
+// Get a single styler cloth by ID
+export const getStylerClothById = async (req, res) => {
   try {
-    const newClothes = new Clothes(req.body);
-    const saved = await newClothes.save();
-    res.status(201).json({ message: "Clothes created", clothes: saved });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const { id } = req.params;
+    if (!isValidObjectId(id)) return res.status(400).json({ message: "Invalid cloth ID" });
+
+    const cloth = await Cloth.findById(id);
+    if (!cloth) return res.status(404).json({ message: "Cloth not found" });
+
+    // Only allow owner or admin to see private items
+    if (cloth.visibility === "private") {
+      const user = req.user;
+      const isOwner = user && String(user._id) === String(cloth.ownerId);
+      const isAdmin = user && user.role === "admin";
+      if (!isOwner && !isAdmin) return res.status(403).json({ message: "Forbidden" });
+    }
+
+    res.status(200).json(cloth);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to get cloth", error: err.message });
   }
 };
 
-// Update clothes
-export const updateClothes = async (req, res) => {
+// -----------------------------
+// Create new styler cloth
+export const createStylerCloth = async (req, res) => {
   try {
-    const updated = await Clothes.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
+    const user = req.user;
+    if (!user || user.role !== "styler") return res.status(403).json({ message: "Styler role required" });
+
+    const { name, image, color, category, price, visibility } = req.body;
+    if (!name || !image || !color || !category)
+      return res.status(400).json({ message: "Missing required fields" });
+
+    const cloth = new Cloth({
+      name,
+      image,
+      color,
+      category,
+      price: price || 0,
+      ownerType: "styler",
+      ownerId: user._id,
+      visibility: visibility || "private",
     });
-    if (!updated) return res.status(404).json({ error: "Clothes not found" });
-    res.status(200).json({ message: "Clothes updated", clothes: updated });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    await cloth.save();
+    res.status(201).json(cloth);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to create cloth", error: err.message });
   }
 };
 
-// Delete clothes
-export const deleteClothes = async (req, res) => {
+// -----------------------------
+// Update styler cloth
+export const updateStylerCloth = async (req, res) => {
   try {
-    const deleted = await Clothes.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ error: "Clothes not found" });
-    res.status(200).json({ message: "Clothes deleted", clothes: deleted });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const { id } = req.params;
+    if (!isValidObjectId(id)) return res.status(400).json({ message: "Invalid cloth ID" });
+
+    const cloth = await Cloth.findById(id);
+    if (!cloth) return res.status(404).json({ message: "Cloth not found" });
+
+    const user = req.user;
+    const isOwner = user && String(user._id) === String(cloth.ownerId);
+    const isAdmin = user && user.role === "admin";
+    if (!isOwner && !isAdmin) return res.status(403).json({ message: "Forbidden" });
+
+    const fields = ["name", "image", "color", "category", "price", "visibility"];
+    fields.forEach((f) => {
+      if (req.body[f] !== undefined) cloth[f] = req.body[f];
+    });
+
+    await cloth.save();
+    res.status(200).json(cloth);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update cloth", error: err.message });
+  }
+};
+
+// -----------------------------
+// Delete styler cloth
+export const deleteStylerCloth = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) return res.status(400).json({ message: "Invalid cloth ID" });
+
+    const cloth = await Cloth.findById(id);
+    if (!cloth) return res.status(404).json({ message: "Cloth not found" });
+
+    const user = req.user;
+    const isOwner = user && String(user._id) === String(cloth.ownerId);
+    const isAdmin = user && user.role === "admin";
+    if (!isOwner && !isAdmin) return res.status(403).json({ message: "Forbidden" });
+
+    await cloth.deleteOne();
+    res.status(200).json({ message: "Cloth deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete cloth", error: err.message });
   }
 };

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-const ClothSchema = new Schema(
+const PartnerClothSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
     image: { type: String, required: true, trim: true }, // URL or path
@@ -9,14 +9,14 @@ const ClothSchema = new Schema(
     category: { type: String, required: true, trim: true },
     price: { type: Number, default: 0 },
 
-    ownerType: { type: String, enum: ["partner", "styler"], required: true },
     ownerId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
-    visibility: { type: String, enum: ["public", "private"], required: true },
+    visibility: { type: String, enum: ["public", "private"], default: "private" },
   },
   { timestamps: true }
 );
 
-ClothSchema.index({ ownerType: 1, ownerId: 1, category: 1 });
+// Index for faster queries by owner and category
+PartnerClothSchema.index({ ownerId: 1, category: 1 });
 
-export const Cloth = mongoose.model("Cloth", ClothSchema);
+export const PartnerCloth = mongoose.model("PartnerCloth", PartnerClothSchema);

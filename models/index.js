@@ -1,5 +1,5 @@
 import "./user.js";
-import "./clothes.js";
+import "./partnerClothes.js";
 import "./occasion.js";
 import "./partner.js";
 import "./payment.js";
