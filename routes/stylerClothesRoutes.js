@@ -3,7 +3,6 @@ import { verifyToken } from "../middleware/auth.js";
 import { verifyRole } from "../middleware/admin.js";
 import {
   createStylerCloth,
-  getPublicStylerClothes,
   getMyStylerClothes,
   getStylerClothById,
   updateStylerCloth,
@@ -12,12 +11,10 @@ import {
 
 const router = express.Router();
 
-router.get("/public", getPublicStylerClothes);
 router.get("/mine", verifyToken, verifyRole("styler"), getMyStylerClothes);
-router.get("/:id", verifyToken, getStylerClothById);
-
 router.post("/", verifyToken, verifyRole("styler"), createStylerCloth);
+router.get("/:id", verifyToken, verifyRole("styler"), getStylerClothById);
 router.put("/:id", verifyToken, verifyRole("styler"), updateStylerCloth);
-router.delete("/:id", verifyToken, verifyRole(["styler","admin"]), deleteStylerCloth);
+router.delete("/:id", verifyToken, verifyRole(["styler", "admin"]), deleteStylerCloth);
 
 export default router;

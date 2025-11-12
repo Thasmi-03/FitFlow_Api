@@ -1,132 +1,200 @@
-import { PartnerCloth } from "../models/partnerClothes.js";
 import mongoose from "mongoose";
+import { StylerClothes } from "../models/stylerClothes.js";
 
-// Helper to check ObjectId
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-// -----------------------------
-// Public: get all public styler clothes
-export const getPublicStylerClothes = async (req, res) => {
-  try {
-    const clothes = await Cloth.find({ ownerType: "styler", visibility: "public" }).sort({ createdAt: -1 });
-    res.status(200).json(clothes);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch public styler clothes", error: err.message });
-  }
-};
-
-// -----------------------------
-// Styler: get logged-in styler's clothes
 export const getMyStylerClothes = async (req, res) => {
   try {
-    const userId = req.user?._id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized to access this resource." });
+    }
 
-    const clothes = await PartnerCloth.find({ ownerType: "styler", ownerId: userId }).sort({ createdAt: -1 });
+    const clothes = await StylerClothes.find({
+      ownerType: "styler",
+      ownerId: req.user._id,
+    }).sort({ createdAt: -1 });
+
     res.status(200).json(clothes);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch your clothes", error: err.message });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-// -----------------------------
-// Get a single styler cloth by ID
 export const getStylerClothById = async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) return res.status(400).json({ message: "Invalid cloth ID" });
 
-    const cloth = await Cloth.findById(id);
-    if (!cloth) return res.status(404).json({ message: "Cloth not found" });
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ error: "Invalid ID format" });
+    }
 
-    // Only allow owner or admin to see private items
-    if (cloth.visibility === "private") {
-      const user = req.user;
-      const isOwner = user && String(user._id) === String(cloth.ownerId);
-      const isAdmin = user && user.role === "admin";
-      if (!isOwner && !isAdmin) return res.status(403).json({ message: "Forbidden" });
+    const cloth = await StylerClothes.findById(id);
+
+    if (!cloth) {
+      return res.status(404).json({ error: "Cloth not found." });
+    }
+
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized to access this resource." });
+    }
+
+    const isOwner = String(cloth.ownerId) === String(req.user._id);
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to access this resource." });
     }
 
     res.status(200).json(cloth);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to get cloth", error: err.message });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-// -----------------------------
-// Create new styler cloth
 export const createStylerCloth = async (req, res) => {
   try {
-    const user = req.user;
-    if (!user || user.role !== "styler") return res.status(403).json({ message: "Styler role required" });
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized to access this resource." });
+    }
 
-    const { name, image, color, category, price, visibility } = req.body;
-    if (!name || !image || !color || !category)
-      return res.status(400).json({ message: "Missing required fields" });
+    if (req.user.role !== "styler") {
+      return res
+        .status(403)
+        .json({ error: "Access denied. Styler role required." });
+    }
 
-    const cloth = new Cloth({
+    const { name, color, category, price } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: "Missing required field: name." });
+    }
+
+    if (!color) {
+      return res.status(400).json({ error: "Missing required field: color." });
+    }
+    if (!category) {
+      return res
+        .status(400)
+        .json({ error: "Missing required field: category." });
+    }
+
+    const cloth = new StylerClothes({
       name,
-      image,
       color,
       category,
       price: price || 0,
       ownerType: "styler",
-      ownerId: user._id,
-      visibility: visibility || "private",
+      ownerId: req.user._id,
+      visibility: "private",
     });
 
-    await cloth.save();
-    res.status(201).json(cloth);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to create cloth", error: err.message });
+    const saved = await cloth.save();
+    res.status(201).json({ message: "Cloth created", cloth: saved });
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((e) => {
+        const message = e.message;
+        if (message.includes("is required")) {
+          return message.replace(/Path `(.+)` is required\./, "$1 is required");
+        }
+        return message;
+      });
+      return res.status(400).json({ error: errors.join(", ") });
+    }
+    res.status(500).json({ error: error.message });
   }
 };
 
-// -----------------------------
-// Update styler cloth
 export const updateStylerCloth = async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) return res.status(400).json({ message: "Invalid cloth ID" });
 
-    const cloth = await Cloth.findById(id);
-    if (!cloth) return res.status(404).json({ message: "Cloth not found" });
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ error: "Invalid ID format" });
+    }
 
-    const user = req.user;
-    const isOwner = user && String(user._id) === String(cloth.ownerId);
-    const isAdmin = user && user.role === "admin";
-    if (!isOwner && !isAdmin) return res.status(403).json({ message: "Forbidden" });
+    const cloth = await StylerClothes.findById(id);
 
-    const fields = ["name", "image", "color", "category", "price", "visibility"];
-    fields.forEach((f) => {
-      if (req.body[f] !== undefined) cloth[f] = req.body[f];
+    if (!cloth) {
+      return res.status(404).json({ error: "Cloth not found." });
+    }
+
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized to access this resource." });
+    }
+
+    const isOwner = String(cloth.ownerId) === String(req.user._id);
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to access this resource." });
+    }
+
+    const updated = await StylerClothes.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
     });
 
-    await cloth.save();
-    res.status(200).json(cloth);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to update cloth", error: err.message });
+    res.status(200).json({ message: "Cloth updated", cloth: updated });
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((e) => {
+        const message = e.message;
+        if (message.includes("is required")) {
+          return message.replace(/Path `(.+)` is required\./, "$1 is required");
+        }
+        return message;
+      });
+      return res.status(400).json({ error: errors.join(", ") });
+    }
+    res.status(500).json({ error: error.message });
   }
 };
 
-// -----------------------------
-// Delete styler cloth
 export const deleteStylerCloth = async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) return res.status(400).json({ message: "Invalid cloth ID" });
 
-    const cloth = await Cloth.findById(id);
-    if (!cloth) return res.status(404).json({ message: "Cloth not found" });
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ error: "Invalid ID format" });
+    }
 
-    const user = req.user;
-    const isOwner = user && String(user._id) === String(cloth.ownerId);
-    const isAdmin = user && user.role === "admin";
-    if (!isOwner && !isAdmin) return res.status(403).json({ message: "Forbidden" });
+    const cloth = await StylerClothes.findById(id);
 
-    await cloth.deleteOne();
+    if (!cloth) {
+      return res.status(404).json({ error: "Cloth not found." });
+    }
+
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized to access this resource." });
+    }
+
+    const isOwner = String(cloth.ownerId) === String(req.user._id);
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to access this resource." });
+    }
+
+    await StylerClothes.findByIdAndDelete(id);
     res.status(200).json({ message: "Cloth deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Failed to delete cloth", error: err.message });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };

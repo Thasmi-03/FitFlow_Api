@@ -39,7 +39,7 @@ export const getStylerById = async (req, res) => {
 
     const styler = await Styler.findById(req.params.id);
 
-    if (!styler) return res.status(404).json({ error: "Styler not found" });
+    if (!styler) return res.status(404).json({ error: "Styler not found." });
 
     res.status(200).json(styler);
   } catch (error) {
@@ -54,6 +54,16 @@ export const createStyler = async (req, res) => {
     const savedStyler = await newStyler.save();
     res.status(201).json({ message: "Styler created", styler: savedStyler });
   } catch (error) {
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map(e => {
+        const message = e.message;
+        if (message.includes("is required")) {
+          return message.replace(/Path `(.+)` is required\./, "$1 is required");
+        }
+        return message;
+      });
+      return res.status(400).json({ error: errors.join(", ") });
+    }
     res.status(500).json({ error: error.message });
   }
 };
@@ -69,10 +79,20 @@ export const updateStyler = async (req, res) => {
       runValidators: true,
     });
 
-    if (!updatedStyler) return res.status(404).json({ error: "Styler not found" });
+    if (!updatedStyler) return res.status(404).json({ error: "Styler not found." });
 
     res.status(200).json({ message: "Styler updated", styler: updatedStyler });
   } catch (error) {
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map(e => {
+        const message = e.message;
+        if (message.includes("is required")) {
+          return message.replace(/Path `(.+)` is required\./, "$1 is required");
+        }
+        return message;
+      });
+      return res.status(400).json({ error: errors.join(", ") });
+    }
     res.status(500).json({ error: error.message });
   }
 };
@@ -85,7 +105,7 @@ export const deleteStyler = async (req, res) => {
 
     const deletedStyler = await Styler.findByIdAndDelete(req.params.id);
 
-    if (!deletedStyler) return res.status(404).json({ error: "Styler not found" });
+    if (!deletedStyler) return res.status(404).json({ error: "Styler not found." });
 
     res.status(200).json({ message: "Styler deleted", styler: deletedStyler });
   } catch (error) {

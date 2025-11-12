@@ -4,21 +4,16 @@ import {
   getAllOccasions,
   getOccasionById,
   updateOccasion,
-  deleteOccasion
+  deleteOccasion,
 } from "../controllers/occasionController.js";
 import { verifyToken } from "../middleware/auth.js";
 import { verifyRole } from "../middleware/admin.js";
 
 const router = express.Router();
 
-// Public reads
-router.get("/", getAllOccasions);
-router.get("/:id", getOccasionById);
-
-// Create: only styler
+router.get("/", verifyToken, verifyRole(["styler", "partner"]), getAllOccasions);
 router.post("/", verifyToken, verifyRole("styler"), createOccasion);
-
-// Update/Delete: allow styler or admin
+router.get("/:id", verifyToken, verifyRole("styler"), getOccasionById);
 router.put("/:id", verifyToken, verifyRole(["styler", "admin"]), updateOccasion);
 router.delete("/:id", verifyToken, verifyRole(["styler", "admin"]), deleteOccasion);
 

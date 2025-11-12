@@ -4,15 +4,27 @@ import {
   getPartnerById,
   createPartner,
   updatePartner,
-  deletePartner
+  deletePartner,
 } from "../controllers/partnerController.js";
+import { verifyToken } from "../middleware/auth.js";
+import { verifyRole } from "../middleware/admin.js";
 
 const router = express.Router();
 
-router.get("/", getAllPartners);
-router.get("/:id", getPartnerById);
-router.post("/", createPartner);
-router.put("/:id", updatePartner);
-router.delete("/:id", deletePartner);
+router.get("/", verifyToken, verifyRole("admin"), getAllPartners);
+router.get(
+  "/:id",
+  verifyToken,
+  verifyRole(["admin", "partner"]),
+  getPartnerById
+);
+router.post("/", verifyToken, verifyRole("partner"), createPartner);
+router.put("/:id", verifyToken, verifyRole("partner"), updatePartner);
+router.delete(
+  "/:id",
+  verifyToken,
+  verifyRole(["admin", "partner"]),
+  deletePartner
+);
 
 export default router;

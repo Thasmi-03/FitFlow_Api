@@ -8,8 +8,8 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-import clothesRoutes from "./routes/stylerClothesRoutes.js";
-import clothRoutes from "./routes/partnerClothesRoutes.js";
+import stylerclothesRoutes from "./routes/stylerClothesRoutes.js";
+import partnerclothesRoutes from "./routes/partnerClothesRoutes.js";
 import occasionRoutes from "./routes/occasionRoutes .js";
 import partnerRoutes from "./routes/partnerRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
@@ -46,8 +46,8 @@ app.use("/api/partner", partnerRoutes);
 app.use("/api/payment", paymentRoutes);
 
 // Correct route wiring: clothes vs cloth vs styler
-app.use("/api/clothes", clothesRoutes);  // collection of clothes endpoints
-app.use("/api/cloth", clothRoutes);      // single-cloth or partner-managed cloth endpoints (if you meant that)
+app.use("/api/stylerclothes", stylerclothesRoutes); // collection of clothes endpoints
+app.use("/api/partnerclothes", partnerclothesRoutes); // single-cloth or partner-managed cloth endpoints (if you meant that)
 app.use("/api/styler", stylerRoutes);
 
 app.use("/api/occasion", occasionRoutes);
