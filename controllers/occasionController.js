@@ -95,15 +95,16 @@ export const createOccasion = async (req, res) => {
     }
 
     const occasion = new Occasion({
-      userId: req.user._id,
-      title,
-      type: type || "other",
-      date,
-      location: location || "",
-      dressCode: dressCode || "",
-      notes: notes || "",
-      clothesList: clothesList || [],
-    });
+  userId: req.user._id,
+  title,
+  type: type || "other",
+  date,
+  location: location || "",
+  dressCode: dressCode || "",
+  notes: notes || "",
+  clothesList: clothesList || [],  
+});
+
 
     const saved = await occasion.save();
     await saved.populate(["userId", "clothesList"]);

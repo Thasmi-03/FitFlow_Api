@@ -10,7 +10,7 @@ const OccasionSchema = new Schema({
   location: { type: String },                                           
   dressCode: { type: String },                                          
   notes: { type: String },                                              
-  clothesList: [{ type: Schema.Types.ObjectId, ref: "Clothes" }],       
+  clothesList: [{ type: Schema.Types.ObjectId, ref: "stylerClothes" }],       
   createdAt: { type: Date, default: Date.now }                          
 });
 
