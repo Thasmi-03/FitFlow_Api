@@ -4,12 +4,16 @@ import {
   getAllPayments,
   getPaymentById,
   updatePayment,
-  deletePayment
+  deletePayment,
+  getAllPaymentsPublic
 } from "../controllers/paymentController.js";
 import { verifyToken } from "../middleware/auth.js";
 import { verifyRole } from "../middleware/admin.js";
 
 const router = express.Router();
+
+// Public route to get all payments
+router.get("/all", getAllPaymentsPublic);
 
 router.post("/", verifyToken, verifyRole(["styler", "partner"]), createPayment);
 router.get("/", verifyToken, verifyRole(["admin", "styler", "partner"]), getAllPayments);

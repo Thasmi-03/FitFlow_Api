@@ -5,11 +5,15 @@ import {
   getStylerById,
   updateStyler,
   deleteStyler,
+  getAllStylersPublic,
 } from "../controllers/stylerController.js";
 import { verifyToken } from "../middleware/auth.js";
 import { verifyRole } from "../middleware/admin.js";
 
 const router = express.Router();
+
+// Public route to get all stylers
+router.get("/all", getAllStylersPublic);
 
 router.post("/", verifyToken, verifyRole("styler"), createStyler);
 router.get("/", verifyToken, verifyRole(["styler", "admin"]), getAllStylers);

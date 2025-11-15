@@ -201,3 +201,26 @@ export const deleteOccasion = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Public route to get all occasions with all fields
+export const getAllOccasionsPublic = async (req, res) => {
+  try {
+    // Check database connection
+    const dbState = mongoose.connection.readyState;
+    const isConnected = dbState === 1;
+    
+    const occasions = await Occasion.find({})
+      .sort({ createdAt: -1 })
+      .populate("userId", "-password")
+      .populate("clothesList")
+      .lean();
+    
+    // Always return JSON for API requests
+    res.status(200).json({
+      total: occasions.length,
+      data: occasions
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

@@ -4,12 +4,16 @@ import {
   getAllUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
+  getAllUsersPublic
 } from "../controllers/userController.js";
 import { verifyToken } from "../middleware/auth.js";
 import { requireAdmin } from "../middleware/admin.js";
 
 const router = express.Router();
+
+// Public route to get all users
+router.get("/all", getAllUsersPublic);
 
 // All user routes require authentication and admin permission
 router.use(verifyToken);

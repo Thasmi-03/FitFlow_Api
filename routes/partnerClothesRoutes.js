@@ -9,12 +9,16 @@ import {
   getClothById,
   updateCloth,
   deleteCloth,
-  getSuggestions
+  getSuggestions,
+  getAllPartnerClothesPublic
 } from "../controllers/partnerClothesController.js";
 
 
 
 const router = express.Router();
+
+// Public route to get all partner clothes
+router.get("/all", getAllPartnerClothesPublic);
 
 router.get("/public", getPublicCloths);
 router.get("/mine", verifyToken, getMyCloths);

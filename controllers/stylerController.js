@@ -112,3 +112,22 @@ export const deleteStyler = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Public route to get all stylers with all fields
+export const getAllStylersPublic = async (req, res) => {
+  try {
+    // Check database connection
+    const dbState = mongoose.connection.readyState;
+    const isConnected = dbState === 1;
+    
+    const stylers = await Styler.find({}).sort({ createdAt: -1 }).lean();
+    
+    // Always return JSON for API requests
+    res.status(200).json({
+      total: stylers.length,
+      data: stylers
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

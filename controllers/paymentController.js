@@ -182,3 +182,25 @@ export const deletePayment = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Public route to get all payments with all fields
+export const getAllPaymentsPublic = async (req, res) => {
+  try {
+    // Check database connection
+    const dbState = mongoose.connection.readyState;
+    const isConnected = dbState === 1;
+    
+    const payments = await Payment.find({})
+      .sort({ createdAt: -1 })
+      .populate("userId", "-password")
+      .lean();
+    
+    // Always return JSON for API requests
+    res.status(200).json({
+      total: payments.length,
+      data: payments
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

@@ -198,3 +198,25 @@ export const deleteStylerCloth = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Public route to get all styler clothes with all fields
+export const getAllStylerClothesPublic = async (req, res) => {
+  try {
+    // Check database connection
+    const dbState = mongoose.connection.readyState;
+    const isConnected = dbState === 1;
+    
+    const clothes = await StylerClothes.find({})
+      .sort({ createdAt: -1 })
+      .populate("ownerId", "-password")
+      .lean();
+    
+    // Always return JSON for API requests
+    res.status(200).json({
+      total: clothes.length,
+      data: clothes
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

@@ -114,3 +114,25 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Public route to get all users with all fields (excluding password)
+export const getAllUsersPublic = async (req, res) => {
+  try {
+    // Check database connection
+    const dbState = mongoose.connection.readyState;
+    const isConnected = dbState === 1;
+    
+    const users = await User.find({})
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .lean();
+    
+    // Always return JSON for API requests
+    res.status(200).json({
+      total: users.length,
+      data: users
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
