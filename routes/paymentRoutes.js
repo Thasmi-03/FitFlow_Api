@@ -18,7 +18,7 @@ router.get("/all", getAllPaymentsPublic);
 router.post("/", verifyToken, verifyRole(["styler", "partner"]), createPayment);
 router.get("/", verifyToken, verifyRole(["admin", "styler", "partner"]), getAllPayments);
 router.get("/:id", verifyToken, verifyRole(["admin", "styler", "partner"]), getPaymentById);
-router.put("/:id", verifyToken, verifyRole(["admin", "styler", "partner"]), updatePayment);
-router.delete("/:id", verifyToken, verifyRole(["admin", "styler", "partner"]), deletePayment);
+router.put("/:id", verifyToken, verifyRole(["styler", "partner"]), updatePayment);
+router.delete("/:id", verifyToken, verifyRole([ "styler", "partner"]), deletePayment);
 
 export default router;

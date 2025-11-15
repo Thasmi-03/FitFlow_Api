@@ -19,6 +19,6 @@ router.get("/mine", verifyToken, verifyRole("styler"), getMyStylerClothes);
 router.post("/", verifyToken, verifyRole("styler"), createStylerCloth);
 router.get("/:id", verifyToken, verifyRole("styler"), getStylerClothById);
 router.put("/:id", verifyToken, verifyRole("styler"), updateStylerCloth);
-router.delete("/:id", verifyToken, verifyRole(["styler", "admin"]), deleteStylerCloth);
+router.delete("/:id", verifyToken, verifyRole("styler"), deleteStylerCloth);
 
 export default router;

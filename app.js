@@ -10,11 +10,11 @@ import adminRoutes from "./routes/adminRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import stylerclothesRoutes from "./routes/stylerClothesRoutes.js";
 import partnerclothesRoutes from "./routes/partnerClothesRoutes.js";
-import occasionRoutes from "./routes/occasionRoutes .js";
 import partnerRoutes from "./routes/partnerRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import stylerRoutes from "./routes/stylerRoutes.js";
 import partnersPublicRoutes from "./routes/partnersPublicRoutes.js";
+import occasionRoutes from "./routes/occasionRoutes.js";
 
 import errorHandler from "./middleware/errorHandler.js";
 
