@@ -21,7 +21,7 @@ router.get("/mine", verifyToken, getMyCloths);
 router.get("/suggestions", verifyToken, verifyRole("styler"), getSuggestions);
 router.post("/", verifyToken, verifyRole("partner"), createCloth);
 router.get("/:id", getClothById);
-router.put("/:id", verifyToken, verifyRole(["partner", "admin"]), updateCloth);
-router.delete("/:id", verifyToken, verifyRole(["partner", "admin"]), deleteCloth);
+router.put("/:id", verifyToken, verifyRole("partner"), updateCloth);
+router.delete("/:id", verifyToken, verifyRole("partner"), deleteCloth);
 
 export default router;
